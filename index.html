@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cénit R — Cotizador Visual de Reformas</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
@@ -332,6 +333,9 @@
           <p id="f-msg" class="hidden text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
             ¡Solicitud enviada! Te contactaremos en menos de 24 horas.
           </p>
+          <p id="f-err" class="hidden text-xs text-red-400 font-semibold bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+            Error al guardar. Revisá la tabla en Supabase.
+          </p>
         </form>
       </div>
 
@@ -339,6 +343,10 @@
   </main>
 
   <script>
+    const SUPABASE_URL = 'https://dfqobmwlpnxzhxgsrtmy.supabase.co';
+    const SUPABASE_ANON_KEY = 'Sb_publishable_eJa7ocUsBl4z_f9h_NJlCg_Grsl75h1';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const state = { market: 'es', scope: 'integral', tier: 'mid' };
 
     const data = {
@@ -387,6 +395,7 @@
         phContact: 'Teléfono / WhatsApp o Email',
         phCity: 'Ciudad / Código postal',
         submit: 'ENVIAR SOLICITUD',
+        sending: 'ENVIANDO...',
         msg: '¡Solicitud enviada! Te contactaremos en menos de 24 horas.',
         rates: {
           integral: { standard: 560, mid: 780, luxury: 1180, w: 8 },
@@ -441,6 +450,7 @@
         phContact: 'Phone / SMS or Email',
         phCity: 'City / ZIP code',
         submit: 'SEND REQUEST',
+        sending: 'SENDING...',
         msg: 'Request sent! We will reach out within 24 hours.',
         rates: {
           integral: { standard: 115, mid: 170, luxury: 265, w: 8 },
@@ -559,20 +569,41 @@
       document.getElementById('lead-form').classList.toggle('hidden');
     }
 
-    function saveLead(e) {
+    async function saveLead(e) {
       e.preventDefault();
-      console.log('Lead:', {
-        market: state.market,
-        scope: state.scope,
-        tier: state.tier,
-        area: document.getElementById('area-val').textContent,
-        range: document.getElementById('res-range').textContent,
-        name: document.getElementById('f-name').value,
-        contact: document.getElementById('f-contact').value,
-        city: document.getElementById('f-city').value
-      });
-      document.getElementById('f-msg').classList.remove('hidden');
-      e.target.reset();
+      const d = data[state.market];
+      const btn = document.getElementById('f-submit');
+      const okMsg = document.getElementById('f-msg');
+      const errMsg = document.getElementById('f-err');
+
+      okMsg.classList.add('hidden');
+      errMsg.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = d.sending;
+
+      const payload = {
+        mercado: state.market,
+        tipo_reforma: state.scope,
+        superficie: document.getElementById('area-val').textContent,
+        calidad: state.tier,
+        rango_estimado: document.getElementById('res-range').textContent,
+        nombre: document.getElementById('f-name').value.trim(),
+        contacto: document.getElementById('f-contact').value.trim(),
+        ciudad: document.getElementById('f-city').value.trim()
+      };
+
+      const { error } = await db.from('leads_reformas').insert([payload]);
+
+      btn.disabled = false;
+      btn.textContent = d.submit;
+
+      if (error) {
+        console.error('Supabase error:', error);
+        errMsg.classList.remove('hidden');
+      } else {
+        okMsg.classList.remove('hidden');
+        e.target.reset();
+      }
     }
 
     calculate();
