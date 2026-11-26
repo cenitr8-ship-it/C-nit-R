@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cénit R — Cotizador Visual de Reformas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #f7f7f5;
+      color: #111315;
+    }
+    .font-display, .font-num {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .card-lift {
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .card-lift:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 28px -12px rgba(17, 19, 21, 0.14);
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 24s linear infinite;
+    }
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 10px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #dc2626;
+      border: 3px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background: #b91c1c;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-red-600 selection:text-white">
+
+  <!-- Barra superior de anuncio dinámica -->
+  <div class="bg-red-600 text-white text-xs font-semibold py-2 overflow-hidden border-b border-red-700">
+    <div id="top-ticker" class="marquee-track gap-10">
+      <span>● COTIZACIÓN INSTANTÁNEA EN 60 SEGUNDOS</span>
+      <span>● VISITA TÉCNICA SIN CARGO</span>
+      <span>● DESGLOSE CLARO POR PARTIDAS</span>
+      <span>● REFORMAS INTEGRALES, COCINAS Y ACABADOS</span>
+      <span>● COTIZACIÓN INSTANTÁNEA EN 60 SEGUNDOS</span>
+      <span>● VISITA TÉCNICA SIN CARGO</span>
+      <span>● DESGLOSE CLARO POR PARTIDAS</span>
+      <span>● REFORMAS INTEGRALES, COCINAS Y ACABADOS</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-neutral-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div id="brand-badge" class="w-10 h-10 rounded-xl bg-red-600 text-white font-display font-bold flex items-center justify-center text-base shadow-sm">
+          CR
+        </div>
+        <div>
+          <div id="brand-name" class="font-display font-bold text-base sm:text-lg text-neutral-950 leading-none tracking-tight">
+            Cénit R
+          </div>
+          <div id="brand-tagline" class="text-[11px] font-medium text-emerald-700 mt-0.5">
+            Estudio & Cotizador de Reformas
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <div class="flex items-center bg-neutral-100 border border-neutral-200 rounded-full p-1 text-xs font-bold">
+          <button id="btn-es" type="button" onclick="setMarket('es')" class="px-3 py-1 rounded-full bg-emerald-600 text-white transition cursor-pointer">
+            ES · €
+          </button>
+          <button id="btn-us" type="button" onclick="setMarket('us')" class="px-3 py-1 rounded-full text-neutral-600 hover:text-neutral-950 transition cursor-pointer">
+            US · $
+          </button>
+        </div>
+        <a href="#cotizador" class="hidden sm:inline-flex items-center px-4 py-2 rounded-full bg-neutral-950 hover:bg-red-600 text-white text-xs font-bold transition">
+          Calcular ahora
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero con imagen real y alto contraste -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center bg-white rounded-3xl p-5 sm:p-8 border border-neutral-200 shadow-sm">
+      <div class="lg:col-span-7 space-y-4">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span id="hero-badge">PRECIO ESTIMADO AL INSTANTE · SIN VUELTAS</span>
+        </div>
+
+        <h1 id="hero-title" class="font-display text-3xl sm:text-4xl lg:text-[42px] font-bold text-neutral-950 leading-[1.08] tracking-tight">
+          Tu reforma calculada antes de pedir presupuesto.
+        </h1>
+
+        <p id="hero-subtitle" class="text-sm sm:text-base text-neutral-600 max-w-xl leading-relaxed">
+          Elegí el tipo de obra, mové los metros y mirá cuánto cuesta realmente reformar tu espacio con claridad total.
+        </p>
+
+        <div class="flex flex-wrap gap-3 pt-1">
+          <a href="#cotizador" id="hero-cta" class="inline-flex items-center justify-center px-6 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md shadow-red-600/20 transition">
+            Probar cotizador interactivo ↓
+          </a>
+          <div class="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-neutral-100 text-neutral-800 text-xs font-bold">
+            <span class="text-emerald-600">✓</span>
+            <span id="hero-pill">Respuesta en menos de 24h</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5">
+        <div class="relative rounded-2xl overflow-hidden aspect-[4/3] bg-neutral-200 border border-neutral-200">
+          <img
+            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80"
+            alt="Interior moderno reformado con iluminación natural"
+            class="w-full h-full object-cover"
+          />
+          <div class="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur rounded-xl px-4 py-2.5 border border-neutral-200/80 flex items-center justify-between">
+            <div>
+              <div id="img-cap-title" class="text-xs font-bold text-neutral-950">Acabados llave en mano</div>
+              <div id="img-cap-sub" class="text-[11px] text-neutral-600">Control de obra y calidades</div>
+            </div>
+            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+              LIVE
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cotizador interactivo -->
+  <main id="cotizador" class="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Columna izquierda: Pasos visuales con fotos -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-neutral-200 shadow-sm space-y-7">
+
+        <!-- Paso 1 -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span id="lbl-scope" class="font-num text-xs font-bold uppercase tracking-wider text-red-600">
+              01 · ELEGÍ EL TIPO DE REFORMA
+            </span>
+            <span id="hint-scope" class="text-xs font-semibold text-emerald-700">Click para cambiar</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <button id="sc-integral" type="button" onclick="selectScope('integral')" class="card-lift group rounded-2xl border-2 border-red-600 bg-red-50/40 overflow-hidden text-left cursor-pointer">
+              <div class="h-24 w-full overflow-hidden bg-neutral-200">
+                <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=75" alt="Reforma integral" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              </div>
+              <div class="p-3.5">
+                <div id="sc-integral-t" class="font-display font-bold text-sm text-neutral-950">Reforma Integral</div>
+                <div id="sc-integral-d" class="text-xs text-neutral-600 mt-0.5">Todo nuevo de punta a punta</div>
+              </div>
+            </button>
+
+            <button id="sc-wet" type="button" onclick="selectScope('wet')" class="card-lift group rounded-2xl border border-neutral-200 bg-white overflow-hidden text-left cursor-pointer">
+              <div class="h-24 w-full overflow-hidden bg-neutral-200">
+                <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=600&q=75" alt="Cocina y baños" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              </div>
+              <div class="p-3.5">
+                <div id="sc-wet-t" class="font-display font-bold text-sm text-neutral-950">Cocina y Baños</div>
+                <div id="sc-wet-d" class="text-xs text-neutral-600 mt-0.5">Zonas clave con alto impacto</div>
+              </div>
+            </button>
+
+            <button id="sc-finish" type="button" onclick="selectScope('finish')" class="card-lift group rounded-2xl border border-neutral-200 bg-white overflow-hidden text-left cursor-pointer">
+              <div class="h-24 w-full overflow-hidden bg-neutral-200">
+                <img src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=75" alt="Suelos y pintura" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              </div>
+              <div class="p-3.5">
+                <div id="sc-finish-t" class="font-display font-bold text-sm text-neutral-950">Suelos y Pintura</div>
+                <div id="sc-finish-d" class="text-xs text-neutral-600 mt-0.5">Cambio rápido y económico</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Paso 2: Metros y extras -->
+        <div class="space-y-4 pt-5 border-t border-neutral-200">
+          <div class="flex items-end justify-between">
+            <label for="area-slider" id="lbl-area" class="font-num text-xs font-bold uppercase tracking-wider text-red-600">
+              02 · SUPERFICIE A REFORMAR
+            </label>
+            <span id="area-val" class="font-num text-2xl sm:text-3xl font-bold text-neutral-950">85 m²</span>
+          </div>
+
+          <input id="area-slider" type="range" min="15" max="300" step="5" value="85" oninput="calculate()" class="w-full" />
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <label class="flex items-center justify-between p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200 hover:border-emerald-500 transition cursor-pointer">
+              <div>
+                <div id="opt-demo-lbl" class="text-xs sm:text-sm font-bold text-neutral-950">Demolición y escombros</div>
+                <div id="opt-demo-sub" class="text-[11px] text-neutral-500">Retiro limpio y contenedor</div>
+              </div>
+              <input id="opt-demo" type="checkbox" checked onchange="calculate()" class="w-5 h-5 accent-emerald-600 cursor-pointer" />
+            </label>
+
+            <label class="flex items-center justify-between p-3.5 rounded-2xl bg-neutral-50 border border-neutral-200 hover:border-emerald-500 transition cursor-pointer">
+              <div>
+                <div id="opt-hvac-lbl" class="text-xs sm:text-sm font-bold text-neutral-950">Climatización / A.A.</div>
+                <div id="opt-hvac-sub" class="text-[11px] text-neutral-500">Confort térmico todo el año</div>
+              </div>
+              <input id="opt-hvac" type="checkbox" onchange="calculate()" class="w-5 h-5 accent-emerald-600 cursor-pointer" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Paso 3: Nivel de calidades -->
+        <div class="space-y-3 pt-5 border-t border-neutral-200">
+          <span id="lbl-tier" class="block font-num text-xs font-bold uppercase tracking-wider text-red-600">
+            03 · NIVEL DE CALIDADES
+          </span>
+          <div class="grid grid-cols-3 gap-3">
+            <button id="t-standard" type="button" onclick="selectTier('standard')" class="card-lift py-3 px-3 rounded-2xl border border-neutral-200 bg-white text-center cursor-pointer">
+              <div id="t-standard-l" class="font-display font-bold text-xs sm:text-sm text-neutral-950">Esencial</div>
+              <div id="t-standard-s" class="text-[11px] text-neutral-500 mt-0.5">Práctico</div>
+            </button>
+
+            <button id="t-mid" type="button" onclick="selectTier('mid')" class="card-lift py-3 px-3 rounded-2xl border-2 border-emerald-600 bg-emerald-50/50 text-center cursor-pointer">
+              <div id="t-mid-l" class="font-display font-bold text-xs sm:text-sm text-neutral-950">Media-Alta</div>
+              <div id="t-mid-s" class="text-[11px] font-bold text-emerald-700 mt-0.5">★ Top ventas</div>
+            </button>
+
+            <button id="t-luxury" type="button" onclick="selectTier('luxury')" class="card-lift py-3 px-3 rounded-2xl border border-neutral-200 bg-white text-center cursor-pointer">
+              <div id="t-luxury-l" class="font-display font-bold text-xs sm:text-sm text-neutral-950">Premium</div>
+              <div id="t-luxury-s" class="text-[11px] text-neutral-500 mt-0.5">A medida</div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Columna derecha: Tarjeta de resultado y captura -->
+      <div class="lg:col-span-5 bg-neutral-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span id="res-label" class="font-num uppercase tracking-wider font-bold text-emerald-400">
+              ESTIMACIÓN CALCULADA
+            </span>
+            <span id="res-rate" class="font-num px-2.5 py-0.5 rounded-full bg-white/10 text-white font-semibold">
+              ~€835 / m²
+            </span>
+          </div>
+
+          <div id="res-range" class="font-num text-3xl sm:text-4xl font-bold text-white tracking-tight pt-1">
+            €62.400 – €80.900
+          </div>
+
+          <div id="res-weeks" class="text-xs font-medium text-neutral-300">
+            Plazo estimado: 8 a 11 semanas
+          </div>
+        </div>
+
+        <!-- Barras de partidas en rojo, verde y blanco -->
+        <div class="space-y-3 pt-4 border-t border-white/15 text-xs">
+          <div>
+            <div class="flex justify-between mb-1">
+              <span id="b1-l" class="text-neutral-200 font-medium">Obra, demolición e instalaciones</span>
+              <span class="font-num font-bold text-red-400">45%</span>
+            </div>
+            <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-red-500 w-[45%] rounded-full"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span id="b2-l" class="text-neutral-200 font-medium">Revestimientos, carpintería y acabados</span>
+              <span class="font-num font-bold text-emerald-400">38%</span>
+            </div>
+            <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-emerald-500 w-[38%] rounded-full"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <span id="b3-l" class="text-neutral-200 font-medium">Dirección, imprevistos y remates</span>
+              <span class="font-num font-bold text-white">17%</span>
+            </div>
+            <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div class="h-full bg-white w-[17%] rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-cta" type="button" onclick="toggleForm()" class="w-full py-3.5 px-5 rounded-full bg-red-600 hover:bg-red-500 text-white font-display font-bold text-sm tracking-wide shadow-lg shadow-red-600/30 transition cursor-pointer">
+          QUIERO MI PRESUPUESTO DETALLADO →
+        </button>
+
+        <form id="lead-form" onsubmit="saveLead(event)" class="hidden space-y-3 pt-4 border-t border-white/15">
+          <input id="f-name" type="text" required placeholder="Nombre y apellido" class="w-full px-4 py-2.5 rounded-xl bg-white text-neutral-950 placeholder:text-neutral-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input id="f-contact" type="text" required placeholder="Teléfono / WhatsApp o Email" class="w-full px-4 py-2.5 rounded-xl bg-white text-neutral-950 placeholder:text-neutral-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <input id="f-city" type="text" required placeholder="Ciudad / Código postal" class="w-full px-4 py-2.5 rounded-xl bg-white text-neutral-950 placeholder:text-neutral-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <button id="f-submit" type="submit" class="w-full py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-display font-bold text-sm transition cursor-pointer">
+            ENVIAR SOLICITUD
+          </button>
+          <p id="f-msg" class="hidden text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+            ¡Solicitud enviada! Te contactaremos en menos de 24 horas.
+          </p>
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const state = { market: 'es', scope: 'integral', tier: 'mid' };
+
+    const data = {
+      es: {
+        currency: '€',
+        unit: 'm²',
+        perUnit: '/ m²',
+        badgeShort: 'CR',
+        brand: 'Cénit R',
+        tagline: 'Estudio & Cotizador de Reformas',
+        badge: 'PRECIO ESTIMADO AL INSTANTE · SIN VUELTAS',
+        title: 'Tu reforma calculada antes de pedir presupuesto.',
+        subtitle: 'Elegí el tipo de obra, mové los metros y mirá cuánto cuesta realmente reformar tu espacio con claridad total.',
+        heroCta: 'Probar cotizador interactivo ↓',
+        heroPill: 'Respuesta en menos de 24h',
+        imgTitle: 'Acabados llave en mano',
+        imgSub: 'Control de obra y calidades',
+        lblScope: '01 · ELEGÍ EL TIPO DE REFORMA',
+        hintScope: 'Click para cambiar',
+        scIntegralT: 'Reforma Integral',
+        scIntegralD: 'Todo nuevo de punta a punta',
+        scWetT: 'Cocina y Baños',
+        scWetD: 'Zonas clave con alto impacto',
+        scFinishT: 'Suelos y Pintura',
+        scFinishD: 'Cambio rápido y económico',
+        lblArea: '02 · SUPERFICIE A REFORMAR',
+        optDemo: 'Demolición y escombros',
+        optDemoSub: 'Retiro limpio y contenedor',
+        optHvac: 'Climatización / A.A.',
+        optHvacSub: 'Confort térmico todo el año',
+        lblTier: '03 · NIVEL DE CALIDADES',
+        tStd: 'Esencial',
+        tStdSub: 'Práctico',
+        tMid: 'Media-Alta',
+        tMidSub: '★ Top ventas',
+        tLux: 'Premium',
+        tLuxSub: 'A medida',
+        resLabel: 'ESTIMACIÓN CALCULADA',
+        weeks: 'Plazo estimado:',
+        weeksUnit: 'semanas',
+        b1: 'Obra, demolición e instalaciones',
+        b2: 'Revestimientos, carpintería y acabados',
+        b3: 'Dirección, imprevistos y remates',
+        cta: 'QUIERO MI PRESUPUESTO DETALLADO →',
+        phName: 'Nombre y apellido',
+        phContact: 'Teléfono / WhatsApp o Email',
+        phCity: 'Ciudad / Código postal',
+        submit: 'ENVIAR SOLICITUD',
+        msg: '¡Solicitud enviada! Te contactaremos en menos de 24 horas.',
+        rates: {
+          integral: { standard: 560, mid: 780, luxury: 1180, w: 8 },
+          wet: { standard: 460, mid: 670, luxury: 990, w: 4 },
+          finish: { standard: 145, mid: 225, luxury: 360, w: 2 }
+        },
+        demoRate: 55,
+        hvacRate: 65
+      },
+      us: {
+        currency: '$',
+        unit: 'sq ft',
+        perUnit: '/ sq ft',
+        badgeShort: 'CR',
+        brand: 'Cénit R',
+        tagline: 'Instant Remodel Estimator',
+        badge: 'INSTANT ESTIMATE IN 60 SECONDS · NO FLUFF',
+        title: 'Know your remodel numbers before you call a contractor.',
+        subtitle: 'Pick your project type, adjust square footage, and see a clear cost range with visual breakdown.',
+        heroCta: 'Try interactive estimator ↓',
+        heroPill: 'Reply under 24 hours',
+        imgTitle: 'Turnkey finishes',
+        imgSub: 'Clear scope & quality control',
+        lblScope: '01 · CHOOSE PROJECT TYPE',
+        hintScope: 'Click to switch',
+        scIntegralT: 'Full Remodel',
+        scIntegralD: 'Complete top-to-bottom upgrade',
+        scWetT: 'Kitchen & Bath',
+        scWetD: 'High-impact wet spaces',
+        scFinishT: 'Flooring & Paint',
+        scFinishD: 'Fast & budget-smart refresh',
+        lblArea: '02 · PROJECT SQUARE FOOTAGE',
+        optDemo: 'Demolition & debris haul',
+        optDemoSub: 'Clean tear-out & dumpster',
+        optHvac: 'HVAC / Air conditioning',
+        optHvacSub: 'Year-round climate comfort',
+        lblTier: '03 · FINISH TIER',
+        tStd: 'Standard',
+        tStdSub: 'Practical',
+        tMid: 'Mid-High',
+        tMidSub: '★ Most picked',
+        tLux: 'Luxury',
+        tLuxSub: 'Custom spec',
+        resLabel: 'LIVE ESTIMATE',
+        weeks: 'Estimated timeline:',
+        weeksUnit: 'weeks',
+        b1: 'Demo, structural & MEP rough-in',
+        b2: 'Flooring, tile, millwork & finishes',
+        b3: 'Project management, contingency & punch',
+        cta: 'GET MY DETAILED ESTIMATE →',
+        phName: 'Full name',
+        phContact: 'Phone / SMS or Email',
+        phCity: 'City / ZIP code',
+        submit: 'SEND REQUEST',
+        msg: 'Request sent! We will reach out within 24 hours.',
+        rates: {
+          integral: { standard: 115, mid: 170, luxury: 265, w: 8 },
+          wet: { standard: 95, mid: 145, luxury: 225, w: 4 },
+          finish: { standard: 14, mid: 24, luxury: 39, w: 2 }
+        },
+        demoRate: 11,
+        hvacRate: 14
+      }
+    };
+
+    function money(n) {
+      return data[state.market].currency + Math.round(n).toLocaleString('en-US');
+    }
+
+    function setMarket(m) {
+      state.market = m;
+      const d = data[m];
+      document.getElementById('btn-es').className = m === 'es'
+        ? 'px-3 py-1 rounded-full bg-emerald-600 text-white transition cursor-pointer'
+        : 'px-3 py-1 rounded-full text-neutral-600 hover:text-neutral-950 transition cursor-pointer';
+      document.getElementById('btn-us').className = m === 'us'
+        ? 'px-3 py-1 rounded-full bg-emerald-600 text-white transition cursor-pointer'
+        : 'px-3 py-1 rounded-full text-neutral-600 hover:text-neutral-950 transition cursor-pointer';
+
+      document.getElementById('brand-badge').textContent = d.badgeShort;
+      document.getElementById('brand-name').textContent = d.brand;
+      document.getElementById('brand-tagline').textContent = d.tagline;
+      document.getElementById('hero-badge').textContent = d.badge;
+      document.getElementById('hero-title').textContent = d.title;
+      document.getElementById('hero-subtitle').textContent = d.subtitle;
+      document.getElementById('hero-cta').textContent = d.heroCta;
+      document.getElementById('hero-pill').textContent = d.heroPill;
+      document.getElementById('img-cap-title').textContent = d.imgTitle;
+      document.getElementById('img-cap-sub').textContent = d.imgSub;
+      document.getElementById('lbl-scope').textContent = d.lblScope;
+      document.getElementById('hint-scope').textContent = d.hintScope;
+      document.getElementById('sc-integral-t').textContent = d.scIntegralT;
+      document.getElementById('sc-integral-d').textContent = d.scIntegralD;
+      document.getElementById('sc-wet-t').textContent = d.scWetT;
+      document.getElementById('sc-wet-d').textContent = d.scWetD;
+      document.getElementById('sc-finish-t').textContent = d.scFinishT;
+      document.getElementById('sc-finish-d').textContent = d.scFinishD;
+      document.getElementById('lbl-area').textContent = d.lblArea;
+      document.getElementById('opt-demo-lbl').textContent = d.optDemo;
+      document.getElementById('opt-demo-sub').textContent = d.optDemoSub;
+      document.getElementById('opt-hvac-lbl').textContent = d.optHvac;
+      document.getElementById('opt-hvac-sub').textContent = d.optHvacSub;
+      document.getElementById('lbl-tier').textContent = d.lblTier;
+      document.getElementById('t-standard-l').textContent = d.tStd;
+      document.getElementById('t-standard-s').textContent = d.tStdSub;
+      document.getElementById('t-mid-l').textContent = d.tMid;
+      document.getElementById('t-mid-s').textContent = d.tMidSub;
+      document.getElementById('t-luxury-l').textContent = d.tLux;
+      document.getElementById('t-luxury-s').textContent = d.tLuxSub;
+      document.getElementById('res-label').textContent = d.resLabel;
+      document.getElementById('b1-l').textContent = d.b1;
+      document.getElementById('b2-l').textContent = d.b2;
+      document.getElementById('b3-l').textContent = d.b3;
+      document.getElementById('btn-cta').textContent = d.cta;
+      document.getElementById('f-name').placeholder = d.phName;
+      document.getElementById('f-contact').placeholder = d.phContact;
+      document.getElementById('f-city').placeholder = d.phCity;
+      document.getElementById('f-submit').textContent = d.submit;
+      document.getElementById('f-msg').textContent = d.msg;
+
+      calculate();
+    }
+
+    function selectScope(sc) {
+      state.scope = sc;
+      ['integral', 'wet', 'finish'].forEach(k => {
+        document.getElementById('sc-' + k).className = k === sc
+          ? 'card-lift group rounded-2xl border-2 border-red-600 bg-red-50/40 overflow-hidden text-left cursor-pointer'
+          : 'card-lift group rounded-2xl border border-neutral-200 bg-white overflow-hidden text-left cursor-pointer';
+      });
+      calculate();
+    }
+
+    function selectTier(t) {
+      state.tier = t;
+      ['standard', 'mid', 'luxury'].forEach(k => {
+        if (k === t) {
+          document.getElementById('t-' + k).className = 'card-lift py-3 px-3 rounded-2xl border-2 border-emerald-600 bg-emerald-50/50 text-center cursor-pointer';
+        } else {
+          document.getElementById('t-' + k).className = 'card-lift py-3 px-3 rounded-2xl border border-neutral-200 bg-white text-center cursor-pointer';
+        }
+      });
+      calculate();
+    }
+
+    function calculate() {
+      const d = data[state.market];
+      const raw = Number(document.getElementById('area-slider').value);
+      const area = state.market === 'es' ? raw : raw * 10;
+      document.getElementById('area-val').textContent = area.toLocaleString('en-US') + ' ' + d.unit;
+
+      const info = d.rates[state.scope];
+      let unitRate = info[state.tier];
+      if (document.getElementById('opt-demo').checked) unitRate += d.demoRate;
+      if (document.getElementById('opt-hvac').checked) unitRate += d.hvacRate;
+
+      const total = area * unitRate;
+      const low = total * 0.88;
+      const high = total * 1.14;
+
+      const wMin = info.w + Math.floor(raw / 95);
+      const wMax = wMin + 3;
+
+      document.getElementById('res-rate').textContent = '~' + money(unitRate) + ' ' + d.perUnit;
+      document.getElementById('res-range').textContent = money(low) + ' – ' + money(high);
+      document.getElementById('res-weeks').textContent = d.weeks + ' ' + wMin + ' a ' + wMax + ' ' + d.weeksUnit;
+    }
+
+    function toggleForm() {
+      document.getElementById('lead-form').classList.toggle('hidden');
+    }
+
+    function saveLead(e) {
+      e.preventDefault();
+      console.log('Lead:', {
+        market: state.market,
+        scope: state.scope,
+        tier: state.tier,
+        area: document.getElementById('area-val').textContent,
+        range: document.getElementById('res-range').textContent,
+        name: document.getElementById('f-name').value,
+        contact: document.getElementById('f-contact').value,
+        city: document.getElementById('f-city').value
+      });
+      document.getElementById('f-msg').classList.remove('hidden');
+      e.target.reset();
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
