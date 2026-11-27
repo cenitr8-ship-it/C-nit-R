@@ -583,9 +583,13 @@
 
       const payload = {
         mercado: state.market,
-        tipo_reforma: state.scope,
+        tipo_reforma: state.lang === 'es'
+          ? (state.scope === 'integral' ? 'Reforma Integral' : state.scope === 'wet' ? 'Cocina / Baño' : 'Pintura / Suelos')
+          : (state.scope === 'integral' ? 'Full Renovation' : state.scope === 'wet' ? 'Kitchen / Bath' : 'Painting / Flooring'),
         superficie: document.getElementById('area-val').textContent,
-        calidad: state.tier,
+        calidad: state.lang === 'es'
+          ? (state.tier === 'high' ? 'Alta / Premium' : (state.tier === 'basic' ? 'Básica' : 'Media / Estándar'))
+          : (state.tier === 'high' ? 'High / Premium' : (state.tier === 'basic' ? 'Basic' : 'Mid / Standard')),
         rango_estimado: document.getElementById('res-range').textContent,
         nombre: document.getElementById('f-name').value.trim(),
         contacto: document.getElementById('f-contact').value.trim(),
