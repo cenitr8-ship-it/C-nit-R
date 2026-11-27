@@ -581,15 +581,19 @@
       btn.disabled = true;
       btn.textContent = d.sending;
 
-     const payload = {
-          mercado: state.market,
-          superficie: Number(state.area) || null,
-          tipo_reforma: state.market === 'ES'
+     const isES = document.getElementById('res-range').textContent.includes('€');
+        const areaText = document.getElementById('res-area')?.textContent || document.getElementById('area-val')?.textContent || '';
+        const areaNum = parseFloat(areaText.replace(/[^\d.]/g, ''));
+
+        const payload = {
+          mercado: isES ? 'ES' : 'US',
+          superficie: Number.isFinite(areaNum) && areaNum > 0 ? areaNum : null,
+          tipo_reforma: isES
             ? (state.scope === 'integral' ? 'Reforma Integral' : state.scope === 'wet' ? 'Cocina / Baño' : 'Pintura / Suelos')
             : (state.scope === 'integral' ? 'Full Renovation' : state.scope === 'wet' ? 'Kitchen / Bath' : 'Painting / Flooring'),
-          calidad: state.market === 'ES'
-            ? (state.tier === 'premium' ? 'Alta / Premium' : state.tier === 'basic' ? 'Básica' : 'Media / Estándar')
-            : (state.tier === 'premium' ? 'High / Premium' : state.tier === 'basic' ? 'Basic' : 'Mid / Standard'),
+          calidad: isES
+            ? (state.tier === 'premium' ? 'Alta / Premium' : (state.tier === 'basic' ? 'Básica' : 'Media / Estándar'))
+            : (state.tier === 'premium' ? 'High / Premium' : (state.tier === 'basic' ? 'Basic' : 'Mid / Standard')),
           rango_estimado: document.getElementById('res-range').textContent,
           nombre: document.getElementById('f-name').value.trim(),
           contacto: document.getElementById('f-contact').value.trim(),
