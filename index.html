@@ -581,19 +581,20 @@
       btn.disabled = true;
       btn.textContent = d.sending;
 
-      const payload = {
-        mercado: state.market,
-        tipo_reforma: state.currency === 'EUR'
-          ? (state.scope === 'integral' ? 'Reforma Integral' : state.scope === 'wet' ? 'Cocina / Baño' : 'Pintura / Suelos')
-          : (state.scope === 'integral' ? 'Full Renovation' : state.scope === 'wet' ? 'Kitchen / Bath' : 'Painting / Flooring'),
-        calidad: state.currency === 'EUR'
-          ? (state.tier === 'premium' ? 'Alta / Premium' : (state.tier === 'basic' ? 'Básica' : 'Media / Estándar'))
-          : (state.tier === 'premium' ? 'High / Premium' : (state.tier === 'basic' ? 'Basic' : 'Mid / Standard')),
-        rango_estimado: document.getElementById('res-range').textContent,
-        nombre: document.getElementById('f-name').value.trim(),
-        contacto: document.getElementById('f-contact').value.trim(),
-        ciudad: document.getElementById('f-city').value.trim()
-      };
+     const payload = {
+          mercado: state.market,
+          superficie: Number(state.area) || null,
+          tipo_reforma: state.market === 'ES'
+            ? (state.scope === 'integral' ? 'Reforma Integral' : state.scope === 'wet' ? 'Cocina / Baño' : 'Pintura / Suelos')
+            : (state.scope === 'integral' ? 'Full Renovation' : state.scope === 'wet' ? 'Kitchen / Bath' : 'Painting / Flooring'),
+          calidad: state.market === 'ES'
+            ? (state.tier === 'premium' ? 'Alta / Premium' : state.tier === 'basic' ? 'Básica' : 'Media / Estándar')
+            : (state.tier === 'premium' ? 'High / Premium' : state.tier === 'basic' ? 'Basic' : 'Mid / Standard'),
+          rango_estimado: document.getElementById('res-range').textContent,
+          nombre: document.getElementById('f-name').value.trim(),
+          contacto: document.getElementById('f-contact').value.trim(),
+          ciudad: document.getElementById('f-city').value.trim()
+        };
 
       const { error } = await db.from('leads_reformas').insert([payload]);
 
