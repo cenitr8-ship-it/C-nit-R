@@ -592,8 +592,8 @@
             ? (state.scope === 'integral' ? 'Reforma Integral' : state.scope === 'wet' ? 'Cocina / Baño' : 'Pintura / Suelos')
             : (state.scope === 'integral' ? 'Full Renovation' : state.scope === 'wet' ? 'Kitchen / Bath' : 'Painting / Flooring'),
           calidad: isES
-            ? ({ basic: 'Estándar', mid: 'Media-Alta', premium: 'Premium', luxury: 'Premium', basica: 'Estándar', media: 'Media-Alta' }[state.tier] || state.tier)
-            : ({ basic: 'Standard', mid: 'Mid-High', premium: 'Premium', luxury: 'Premium', basica: 'Standard', media: 'Mid-High' }[state.tier] || state.tier),
+            ? ({ basic: 'Estándar', mid: 'Media-Alta', luxury: 'Premium', premium: 'Premium', basica: 'Estándar', media: 'Media-Alta' }[state.tier] || state.tier)
+            : ({ basic: 'Standard', mid: 'Mid-High', luxury: 'luxury', premium: 'luxury', basica: 'Standard', media: 'Mid-High' }[state.tier] || state.tier),
           rango_estimado: document.getElementById('res-range').textContent,
           nombre: document.getElementById('f-name').value.trim(),
           contacto: document.getElementById('f-contact').value.trim(),
