@@ -585,18 +585,17 @@
         const areaText = document.getElementById('res-area')?.textContent || document.getElementById('area-val')?.textContent || '';
         const areaNum = parseFloat(areaText.replace(/[^\d.]/g, ''));
 
-        const payload = {
+       const payload = {
           mercado: isES ? 'ES' : 'US',
           superficie: Number.isFinite(areaNum) && areaNum > 0 ? areaNum : null,
           tipo_reforma: isES
             ? (state.scope === 'integral' ? 'Reforma Integral' : state.scope === 'wet' ? 'Cocina / Baño' : 'Pintura / Suelos')
             : (state.scope === 'integral' ? 'Full Renovation' : state.scope === 'wet' ? 'Kitchen / Bath' : 'Painting / Flooring'),
-          calidad: (
-          document.querySelector('[data-tier].active, .tier-btn.active, [data-quality].active, .quality-btn.active, button[aria-pressed="true"]')?.textContent ||
-          (isES
-            ? (state.tier === 'high' || state.tier === 'alta' || state.tier === 'premium' ? 'Alta / Premium' : (state.tier === 'basic' || state.tier === 'basica' ? 'Básica' : 'Media-Alta'))
-            : (state.tier === 'high' || state.tier === 'alta' || state.tier === 'premium' ? 'High / Premium' : (state.tier === 'basic' || state.tier === 'basica' ? 'Basic' : 'Mid-High')))
-        ).trim(),
+          calidad: String(state.tier || ''),
+          rango_estimado: document.getElementById('res-range').textContent,
+          nombre: document.getElementById('f-name').value.trim(),
+          contacto: document.getElementById('f-contact').value.trim(),
+          ciudad: document.getElementById('f-city').value.trim()
         };
 
       const { error } = await db.from('leads_reformas').insert([payload]);
